@@ -1,26 +1,49 @@
-# Microsoft 365 Backup Admin Dashboard
+# M365 Backup SaaS Front-end (Vite + React + TypeScript)
 
-Projeto frontend em Vite + React 18 + TypeScript com Tailwind CSS para um dashboard administrativo de backups do Microsoft 365.
+Aplicação front-end para produto de backup Microsoft 365 com foco em **SharePoint Online**, **OneDrive** e **Exchange Online**.
 
-## Requisitos
+## Stack usada
+- Vite + React + TypeScript
+- React Router
+- TailwindCSS (dark + verde como primary)
+- Componentes de UI reutilizáveis em `src/components/ui`
+- Ícones `lucide-react`
+- Gráficos com `recharts`
+- API mock em memória (sem backend)
 
-- Node.js 18+
-- npm 9+
+> Observação: o ambiente bloqueou instalação de novas libs npm (HTTP 403), então a camada de estado/requests/validação foi implementada com alternativas nativas + mocks em memória.
 
-## Como rodar
-
+## Rodando
 ```bash
 npm install
 npm run dev
 ```
 
-Abra o navegador em `http://localhost:5173`.
+Build:
+```bash
+npm run build
+```
 
-## Rotas principais
-
-- `/login`
-- `/connect-microsoft`
+## Rotas
 - `/dashboard`
-- `/tenants`
-- `/jobs`
+- `/schedules`
+- `/schedules/new`
 - `/settings`
+
+## Estrutura
+- `src/layout/` layout principal (sidebar + topbar)
+- `src/pages/` páginas
+- `src/components/` componentes reutilizáveis (`StatCard`, `DataTable`, `ScheduleForm`, `TreePicker`, `ConnectionCard`)
+- `src/api/` client + services mock
+- `src/data/` seeds mock
+- `src/types/` DTOs e tipos
+- `src/store/` estado global leve
+
+## Mock seeds
+- Métricas de dashboard
+- Execuções recentes
+- Schedules iniciais
+- Árvore SharePoint/OneDrive (lazy-load)
+- Mailboxes Exchange
+- Status de conexão M365
+- Logs
