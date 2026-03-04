@@ -1,59 +1,39 @@
-import { Card } from '../components/Card';
-import { Input } from '../components/Input';
-import { Select } from '../components/Select';
-import { Button } from '../components/Button';
+import { useEffect, useState } from 'react';
+import { connectM365, disconnectM365, getConnectionStatus, listLogs } from '../api/services';
+import { ConnectionCard } from '../components/ConnectionCard';
+import { Card } from '../components/ui/Card';
+import type { LogItem, M365Connection } from '../types';
 
-export function Settings() {
+export function SettingsPage() {
+  const [connection, setConnection] = useState<M365Connection>({ status: 'disconnected' });
+  const [logs, setLogs] = useState<LogItem[]>([]);
+  useEffect(() => { getConnectionStatus().then(setConnection); listLogs().then(setLogs); }, []);
+
   return (
-    <div className="space-y-6">
-      <Card>
-        <p className="text-sm font-semibold text-white">Configurações gerais</p>
-        <p className="text-xs text-white/50">Ajuste políticas de retenção e alertas.</p>
-        <div className="mt-6 grid gap-4 md:grid-cols-2">
-          <div>
-            <label className="text-xs uppercase tracking-wider text-white/50">Retenção (dias)</label>
-            <Input className="mt-2" placeholder="90" />
-          </div>
-          <div>
-            <label className="text-xs uppercase tracking-wider text-white/50">Janela de execução</label>
-            <Input className="mt-2" placeholder="00:00 - 06:00" />
-          </div>
-          <div>
-            <label className="text-xs uppercase tracking-wider text-white/50">Webhook de alertas</label>
-            <Input className="mt-2" placeholder="https://hooks.slack.com/..." />
-          </div>
-          <div>
-            <label className="text-xs uppercase tracking-wider text-white/50">E-mail de notificação</label>
-            <Input className="mt-2" placeholder="alerts@contoso.com" />
-          </div>
-        </div>
-        <div className="mt-6 flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 p-4">
-          <div>
-            <p className="text-sm font-semibold text-white">Criptografia em repouso</p>
-            <p className="text-xs text-white/50">Protege dados armazenados automaticamente.</p>
-          </div>
-          <Button variant="secondary">Ativado</Button>
+    <div className="space-y-4">
+      <ConnectionCard status={connection} onConnect={async () => {
+        setConnection({ ...connection, status: 'connecting' });
+        const next = await connectM365();
+        setConnection(next);
+      }} onDisconnect={() => disconnectM365().then(setConnection)} />
+
+      <Card className="space-y-3">
+        <h3 className="text-lg font-semibold">Armazenamento</h3>
+        <div className="grid gap-3 md:grid-cols-2">
+          <select className="rounded bg-slate-800 px-3 py-2"><option>S3</option><option>Azure Blob</option></select>
+          <input className="rounded bg-slate-800 px-3 py-2" placeholder="bucket/container" />
         </div>
       </Card>
 
+      <Card className="space-y-3">
+        <h3 className="text-lg font-semibold">Segurança</h3>
+        <label className="flex items-center gap-2"><input type="checkbox" defaultChecked /> MFA obrigatório</label>
+        <button className="rounded border border-slate-700 px-3 py-2">Rotação de token (mock)</button>
+      </Card>
+
       <Card>
-        <p className="text-sm font-semibold text-white">Branding White-label</p>
-        <p className="text-xs text-white/50">Personalize o painel para seus clientes.</p>
-        <div className="mt-6 grid gap-4 md:grid-cols-2">
-          <div>
-            <label className="text-xs uppercase tracking-wider text-white/50">Upload de logo</label>
-            <Input className="mt-2" type="file" />
-          </div>
-          <div>
-            <label className="text-xs uppercase tracking-wider text-white/50">Cor primária</label>
-            <Select className="mt-2" defaultValue="laranja">
-              <option value="laranja">Laranja neon</option>
-              <option value="azul">Azul Microsoft</option>
-              <option value="verde">Verde vibrante</option>
-              <option value="vermelho">Vermelho intenso</option>
-            </Select>
-          </div>
-        </div>
+        <h3 className="mb-2 text-lg font-semibold">Logs recentes</h3>
+        {logs.map((log) => <p key={log.id} className="text-sm text-slate-300">[{new Date(log.timestamp).toLocaleString()}] {log.level.toUpperCase()} - {log.message}</p>)}
       </Card>
     </div>
   );
